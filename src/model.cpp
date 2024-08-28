@@ -80,9 +80,11 @@ float Model::infer(uint8_t *inputBGRA, uint32_t width, uint32_t height)
 
 	auto grayTensor = convertToGrayscale(tensor);
 
+	auto laplacianImage = applyLaplacianFilter(grayTensor);
+
 	// run the model
 	torch::NoGradGuard no_grad;
-	torch::Tensor output = m_module.forward({tensor}).toTensor();
+	torch::Tensor output = m_module.forward({laplacianImage}).toTensor();
 
 	if (torch::cuda::is_available())
 		torch::cuda::synchronize();
