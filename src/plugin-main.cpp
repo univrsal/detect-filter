@@ -18,14 +18,21 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 
 #include <obs-module.h>
 #include <plugin-support.h>
+#include "filter.hpp"
+
+#include <torch/torch.h>
 
 OBS_DECLARE_MODULE()
 OBS_MODULE_USE_DEFAULT_LOCALE(PLUGIN_NAME, "en-US")
 
 bool obs_module_load(void)
 {
-	obs_log(LOG_INFO, "plugin loaded successfully (version %s)",
-		PLUGIN_VERSION);
+	obs_log(LOG_INFO,
+		"plugin loaded successfully (version %s), torch version %i.%i.%i, cuda: %s",
+		PLUGIN_VERSION, TORCH_VERSION_MAJOR, TORCH_VERSION_MINOR,
+		TORCH_VERSION_PATCH,
+		torch::cuda::is_available() ? "yes" : "no");
+	obs_register_source(&detect_filter);
 	return true;
 }
 

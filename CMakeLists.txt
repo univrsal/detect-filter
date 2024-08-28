@@ -13,6 +13,11 @@ include(helpers)
 
 add_library(${CMAKE_PROJECT_NAME} MODULE)
 
+set_property(TARGET ${CMAKE_PROJECT_NAME} PROPERTY CXX_STANDARD 20)
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindLibTorch.cmake")
+target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC ${TORCH_LIBRARIES})
+string(TIMESTAMP TODAY "%Y.%m.%d %H:%M")
+
 find_package(libobs REQUIRED)
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs)
 
@@ -34,6 +39,6 @@ if(ENABLE_QT)
                AUTORCC ON)
 endif()
 
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE src/plugin-main.c)
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE src/plugin-main.cpp src/filter.cpp src/filter.hpp src/model.cpp src/model.hpp)
 
 set_target_properties_plugin(${CMAKE_PROJECT_NAME} PROPERTIES OUTPUT_NAME ${_name})

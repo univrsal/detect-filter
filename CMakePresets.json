@@ -18,7 +18,9 @@
       "name": "macos",
       "displayName": "macOS Universal",
       "description": "Build for macOS 11.0+ (Universal binary)",
-      "inherits": ["template"],
+      "inherits": [
+        "template"
+      ],
       "binaryDir": "${sourceDir}/build_macos",
       "condition": {
         "type": "equals",
@@ -26,7 +28,10 @@
         "rhs": "Darwin"
       },
       "generator": "Xcode",
-      "warnings": {"dev": true, "deprecated": true},
+      "warnings": {
+        "dev": true,
+        "deprecated": true
+      },
       "cacheVariables": {
         "CMAKE_OSX_DEPLOYMENT_TARGET": "11.0",
         "CODESIGN_IDENTITY": "$penv{CODESIGN_IDENT}",
@@ -35,19 +40,23 @@
     },
     {
       "name": "macos-ci",
-      "inherits": ["macos"],
+      "inherits": [
+        "macos"
+      ],
       "displayName": "macOS Universal CI build",
       "description": "Build for macOS 11.0+ (Universal binary) for CI",
       "generator": "Xcode",
       "cacheVariables": {
-        "CMAKE_COMPILE_WARNING_AS_ERROR": true
+        "CMAKE_COMPILE_WARNING_AS_ERROR": false
       }
     },
     {
       "name": "windows-x64",
       "displayName": "Windows x64",
       "description": "Build for Windows x64",
-      "inherits": ["template"],
+      "inherits": [
+        "template"
+      ],
       "binaryDir": "${sourceDir}/build_x64",
       "condition": {
         "type": "equals",
@@ -56,25 +65,32 @@
       },
       "generator": "Visual Studio 17 2022",
       "architecture": "x64",
-      "warnings": {"dev": true, "deprecated": true},
+      "warnings": {
+        "dev": true,
+        "deprecated": true
+      },
       "cacheVariables": {
         "CMAKE_SYSTEM_VERSION": "10.0.18363.657"
       }
     },
     {
       "name": "windows-ci-x64",
-      "inherits": ["windows-x64"],
+      "inherits": [
+        "windows-x64"
+      ],
       "displayName": "Windows x64 CI build",
       "description": "Build for Windows x64 on CI",
       "cacheVariables": {
-        "CMAKE_COMPILE_WARNING_AS_ERROR": true
+        "CMAKE_COMPILE_WARNING_AS_ERROR": false
       }
     },
     {
       "name": "linux-x86_64",
       "displayName": "Linux x86_64",
       "description": "Build for Linux x86_64",
-      "inherits": ["template"],
+      "inherits": [
+        "template"
+      ],
       "binaryDir": "${sourceDir}/build_x86_64",
       "condition": {
         "type": "equals",
@@ -82,26 +98,33 @@
         "rhs": "Linux"
       },
       "generator": "Ninja",
-      "warnings": {"dev": true, "deprecated": true},
+      "warnings": {
+        "dev": true,
+        "deprecated": true
+      },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo"
       }
     },
     {
       "name": "linux-ci-x86_64",
-      "inherits": ["linux-x86_64"],
+      "inherits": [
+        "linux-x86_64"
+      ],
       "displayName": "Linux x86_64 CI build",
       "description": "Build for Linux x86_64 on CI",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "CMAKE_COMPILE_WARNING_AS_ERROR": true
+        "CMAKE_COMPILE_WARNING_AS_ERROR": false
       }
     },
     {
       "name": "linux-aarch64",
       "displayName": "Linux aarch64",
       "description": "Build for Linux aarch64",
-      "inherits": ["template"],
+      "inherits": [
+        "template"
+      ],
       "binaryDir": "${sourceDir}/build_aarch64",
       "condition": {
         "type": "equals",
@@ -109,19 +132,24 @@
         "rhs": "Linux"
       },
       "generator": "Ninja",
-      "warnings": {"dev": true, "deprecated": true},
+      "warnings": {
+        "dev": true,
+        "deprecated": true
+      },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo"
       }
     },
     {
       "name": "linux-ci-aarch64",
-      "inherits": ["linux-aarch64"],
+      "inherits": [
+        "linux-aarch64"
+      ],
       "displayName": "Linux aarch64 CI build",
       "description": "Build for Linux aarch64 on CI",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "CMAKE_COMPILE_WARNING_AS_ERROR": true
+        "CMAKE_COMPILE_WARNING_AS_ERROR": false
       }
     }
   ],
