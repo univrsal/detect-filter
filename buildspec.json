@@ -33,16 +33,16 @@
     },
     "platformConfig": {
         "macos": {
-            "bundleId": "com.example.obs-plugintemplate"
+            "bundleId": "cc.vrsal.detect-filter"
         }
     },
-    "name": "obs-plugintemplate",
-    "displayName": "OBS Plugin Template",
+    "name": "detect-filter",
+    "displayName": "Libtorch image detection filter",
     "version": "1.0.0",
-    "author": "Your Name Here",
-    "website": "https://example.com",
-    "email": "me@example.com",
+    "author": "Alex",
+    "website": "https://vrsal.cc",
+    "email": "contact@vrsal.xyz",
     "uuids": {
-        "windowsApp": "00000000-0000-0000-0000-000000000000"
+        "windowsApp": "5f432e2d-a97d-43a0-8a19-1e759860df7e"
     }
 }
