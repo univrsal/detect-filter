@@ -35,8 +35,14 @@ if(NOT Torch_FOUND)
         unset(FETCHCONTENT_QUIET CACHE)
         FetchContent_Populate(libtorch)
         list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR}/libtorch)
+        set(LIBTORCH_DIR
+            ${CMAKE_BINARY_DIR}/libtorch
+        )
+
+        set(Torch_DIR "${LIBTORCH_DIR}/share/cmake/Torch")
+
     endif()
-    find_package(Torch ${libtorch_VERSION} EXACT CONFIG REQUIRED)
+    find_package(Torch REQUIRED)
 else()
     message(STATUS "libtorch found")
 endif()
