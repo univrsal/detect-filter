@@ -19,6 +19,10 @@ void Model::load_model(const std::string &model_path)
 		m_module = torch::jit::load(model_path);
 		m_module.eval();
 		m_loaded = true;
+
+		if (torch::cuda::is_available()) {
+			m_module.to(torch::kCUDA);
+		}
 	} catch (const c10::Error &e) {
 		obs_log(LOG_ERROR, "Error loading the model: %s", e.what());
 	}
