@@ -24,6 +24,43 @@ void Model::load_model(const std::string &model_path)
 	}
 }
 
+// Function to convert RGB byte array to grayscale tensor
+torch::Tensor convertToGrayscale(torch::Tensor rgbTensor)
+{
+	// Apply the RGB to Grayscale conversion
+	torch::Tensor grayTensor = 0.299 * rgbTensor.slice(2, 0, 1) +
+				   0.587 * rgbTensor.slice(2, 1, 2) +
+				   0.114 * rgbTensor.slice(2, 2, 3);
+
+	// Remove the single color channel dimension to get shape (H, W)
+	grayTensor = grayTensor.squeeze(2);
+
+	return grayTensor;
+}
+
+torch::Tensor applyLaplacianFilter(const torch::Tensor &grayImage)
+{
+	// Define the 3x3 Laplacian kernel
+	torch::Tensor laplacianKernel =
+		torch::tensor({{0, 1, 0}, {1, -4, 1}, {0, 1, 0}},
+			      torch::kFloat32)
+			.unsqueeze(0)
+			.unsqueeze(0)
+			.to(grayImage.device());
+
+	// Expand dimensions of the grayscale image tensor to (1, 1, H, W) to match the input format required for convolution
+	torch::Tensor grayImageExpanded = grayImage.unsqueeze(0).unsqueeze(0);
+
+	// Apply 2D convolution using the Laplacian kernel
+	torch::Tensor laplacianImage =
+		torch::conv2d(grayImageExpanded, laplacianKernel);
+
+	// Remove extra dimensions to get back to (H, W) shape
+	laplacianImage = laplacianImage.squeeze(0).squeeze(0);
+
+	return laplacianImage;
+}
+
 float Model::infer(uint8_t *inputBGRA, uint32_t width, uint32_t height)
 {
 	// convert inputBGRA to tensor
@@ -32,6 +69,12 @@ float Model::infer(uint8_t *inputBGRA, uint32_t width, uint32_t height)
 	tensor = tensor.permute({0, 3, 1, 2});
 	tensor = tensor.toType(torch::kFloat);
 	tensor = tensor.div(255);
+
+	if (torch::cuda::is_available()) {
+		tensor = tensor.to(torch::kCUDA);
+	}
+
+	auto grayTensor = convertToGrayscale(tensor);
 
 	// run the model
 	torch::NoGradGuard no_grad;
