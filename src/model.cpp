@@ -84,7 +84,13 @@ float Model::infer(uint8_t *inputBGRA, uint32_t width, uint32_t height)
 	torch::NoGradGuard no_grad;
 	torch::Tensor output = m_module.forward({tensor}).toTensor();
 
+	if (torch::cuda::is_available())
+		torch::cuda::synchronize();
+
+	output = output.contiguous().to(torch::kCPU);
+
 	// get the output
-	float confidence = output[0].item<float>();
-	return confidence;
+	auto softmax = torch::nn::functional::softmax(output, 1);
+	float score = softmax[0][0].item<float>();
+	return score;
 }
