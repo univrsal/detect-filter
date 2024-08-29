@@ -67,18 +67,15 @@ torch::Tensor applyLaplacianFilter(torch::Tensor grayImage)
 	obs_log(LOG_INFO, "%i, %i, %i, %i", grayImageExpanded.size(0), grayImageExpanded.size(1),grayImageExpanded.size(2),grayImageExpanded.size(3));
 	// Apply 2D convolution using the Laplacian kernel
 	torch::Tensor laplacianImage =
-		torch::conv2d(grayImageExpanded, laplacianKernel);
-
-	// Remove extra dimensions to get back to (H, W) shape
-	laplacianImage = laplacianImage.squeeze(0).squeeze(0);
+		torch::conv2d(grayImageExpanded, laplacianKernel, /*bias=*/{}, /*stride=*/1, /*padding=*/1);
 
 	return laplacianImage;
 }
 
 float Model::infer(uint8_t *inputBGRA, uint32_t width, uint32_t height)
 {
-	if (!m_loaded)
-		return -1;
+        if (!m_loaded)
+            return -1;
 	// convert inputBGRA to tensor
 	torch::Tensor tensor = torch::from_blob(
 		inputBGRA, {1, width, height, 4}, torch::kByte);
