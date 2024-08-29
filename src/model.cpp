@@ -26,6 +26,7 @@ void Model::load_model(const std::string &model_path)
 	} catch (const c10::Error &e) {
 		obs_log(LOG_ERROR, "Error loading the model: %s", e.what());
 	}
+	obs_log(LOG_INFO, "Loaded model.");
 }
 
 // Function to convert RGB byte array to grayscale tensor
@@ -94,16 +95,22 @@ float Model::infer(uint8_t *inputBGRA, uint32_t width, uint32_t height)
 	auto laplacianImage = applyLaplacianFilter(grayTensor);
 
 	// run the model
-	torch::NoGradGuard no_grad;
-	torch::Tensor output = m_module.forward({laplacianImage}).toTensor();
+	float score = -1;
+	try {
+	    torch::NoGradGuard no_grad;
+	    torch::Tensor output = m_module.forward({laplacianImage}).toTensor();
 
-	if (torch::cuda::is_available())
-		torch::cuda::synchronize();
+            if (torch::cuda::is_available())
+                torch::cuda::synchronize();
 
-	output = output.contiguous().to(torch::kCPU);
+            output = output.contiguous().to(torch::kCPU);
 
-	// get the output
-	auto softmax = torch::nn::functional::softmax(output, 1);
-	float score = softmax[0][0].item<float>();
+            // get the output
+            auto softmax = torch::nn::functional::softmax(output, 1);
+            score = softmax[0][0].item<float>();
+        } catch (const c10::Error &e) {
+            obs_log(LOG_ERROR, "Error loading the model: %s", e.what());
+        }
+
 	return score;
 }

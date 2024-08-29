@@ -208,7 +208,8 @@ static void df_video_tick(void *data, float)
 		float confidence =
 			filter->model.infer(inputBGRA, width, height);
 
-		obs_log(LOG_DEBUG, "confidence: %f", confidence);
+		if (confidence >= 0)
+		    obs_log(LOG_DEBUG, "confidence: %f", confidence);
 		bfree(inputBGRA);
 	}
 }
