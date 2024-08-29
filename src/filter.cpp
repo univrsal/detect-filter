@@ -40,7 +40,7 @@ struct detect_filter_data {
 	Model model{};
 	bool m_log{};
 	float confidenceThreshold{};
-	uint32_t width{}, height{}, linesize{};
+	uint32_t width{}, height{}, bpc{}; // bytes per channel
 };
 
 bool getRGBAFromStageSurface(detect_filter_data *tf, uint32_t &width,
@@ -99,9 +99,9 @@ bool getRGBAFromStageSurface(detect_filter_data *tf, uint32_t &width,
 	{
 		std::lock_guard<std::mutex> lock(tf->inputBGRALock);
 		bfree(tf->inputBGRA);
-		tf->inputBGRA = (uint8_t *)bmalloc(width * height * linesize);
-		memcpy(tf->inputBGRA, video_data, width * height * linesize);
-		tf->linesize = linesize;
+		tf->bpc = linesize/width;
+		tf->inputBGRA = (uint8_t *)bmalloc(width * height * tf->bpc);
+		memcpy(tf->inputBGRA, video_data, width * height * tf->bpc);
 	}
 	gs_stagesurface_unmap(tf->stagesurface);
 	return true;
@@ -140,6 +140,8 @@ static void *df_create(obs_data_t *settings, obs_source_t *filter)
 {
 	auto *mfd = new detect_filter_data;
 	mfd->source = filter;
+	mfd->texrender = gs_texrender_create(GS_BGRA, GS_ZS_NONE);
+
 	df_update(mfd, settings);
 	return mfd;
 }
@@ -174,7 +176,6 @@ static void df_video_render(void *data, gs_effect_t *effect)
 	obs_source_skip_video_filter(filter->source);
 
 	uint32_t width, height;
-	std::lock_guard<std::mutex> lock(filter->inputBGRALock);
 	if (getRGBAFromStageSurface(filter, width, height)) {
 		filter->width = width;
 		filter->height = height;
@@ -194,10 +195,10 @@ static void df_video_tick(void *data, float)
 		if (filter->inputBGRA) {
 			inputBGRA = (uint8_t *)bmalloc(filter->width *
 						       filter->height *
-						       filter->linesize);
+						       filter->bpc);
 			memcpy(inputBGRA, (void *)filter->inputBGRA,
 			       filter->width * filter->height *
-				       filter->linesize);
+				       filter->bpc);
 		}
 		width = filter->width;
 		height = filter->height;

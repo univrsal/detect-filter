@@ -31,18 +31,24 @@ void Model::load_model(const std::string &model_path)
 // Function to convert RGB byte array to grayscale tensor
 torch::Tensor convertToGrayscale(torch::Tensor rgbTensor)
 {
-	// Apply the RGB to Grayscale conversion
-	torch::Tensor grayTensor = 0.299 * rgbTensor.slice(2, 0, 1) +
-				   0.587 * rgbTensor.slice(2, 1, 2) +
-				   0.114 * rgbTensor.slice(2, 2, 3);
+	// Select the first channel (R)
+	torch::Tensor red_channel = rgbTensor.index({torch::indexing::Slice(), 0, torch::indexing::Slice(), torch::indexing::Slice()});
 
-	// Remove the single color channel dimension to get shape (H, W)
-	grayTensor = grayTensor.squeeze(2);
+	// Select the second channel (G)
+	torch::Tensor green_channel = rgbTensor.index({torch::indexing::Slice(), 1, torch::indexing::Slice(), torch::indexing::Slice()});
+
+	// Select the third channel (B)
+	torch::Tensor blue_channel = rgbTensor.index({torch::indexing::Slice(), 2, torch::indexing::Slice(), torch::indexing::Slice()});
+
+	// Compute the grayscale tensor
+	torch::Tensor grayTensor = 0.299 * red_channel + 0.587 * green_channel + 0.114 * blue_channel;
+
+	grayTensor = grayTensor.unsqueeze(0);
 
 	return grayTensor;
 }
 
-torch::Tensor applyLaplacianFilter(const torch::Tensor &grayImage)
+torch::Tensor applyLaplacianFilter(torch::Tensor grayImage)
 {
 	// Define the 3x3 Laplacian kernel
 	torch::Tensor laplacianKernel =
@@ -52,9 +58,12 @@ torch::Tensor applyLaplacianFilter(const torch::Tensor &grayImage)
 			.unsqueeze(0)
 			.to(grayImage.device());
 
-	// Expand dimensions of the grayscale image tensor to (1, 1, H, W) to match the input format required for convolution
-	torch::Tensor grayImageExpanded = grayImage.unsqueeze(0).unsqueeze(0);
 
+	// Expand dimensions of the grayscale image tensor to (1, 1, H, W) to match the input format required for convolution
+	torch::Tensor grayImageExpanded = grayImage;//.squeeze(0).squeeze(0);
+
+	obs_log(LOG_INFO, "%i, %i, %i, %i", laplacianKernel.size(0), laplacianKernel.size(1),laplacianKernel.size(2),laplacianKernel.size(3));
+	obs_log(LOG_INFO, "%i, %i, %i, %i", grayImageExpanded.size(0), grayImageExpanded.size(1),grayImageExpanded.size(2),grayImageExpanded.size(3));
 	// Apply 2D convolution using the Laplacian kernel
 	torch::Tensor laplacianImage =
 		torch::conv2d(grayImageExpanded, laplacianKernel);
@@ -67,9 +76,11 @@ torch::Tensor applyLaplacianFilter(const torch::Tensor &grayImage)
 
 float Model::infer(uint8_t *inputBGRA, uint32_t width, uint32_t height)
 {
+	if (!m_loaded)
+		return -1;
 	// convert inputBGRA to tensor
 	torch::Tensor tensor = torch::from_blob(
-		inputBGRA, {1, height, width, 4}, torch::kByte);
+		inputBGRA, {1, width, height, 4}, torch::kByte);
 	tensor = tensor.permute({0, 3, 1, 2});
 	tensor = tensor.toType(torch::kFloat);
 	tensor = tensor.div(255);
